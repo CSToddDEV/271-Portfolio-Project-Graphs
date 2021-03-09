@@ -165,6 +165,9 @@ class UndirectedGraph:
         """
         visited = []
 
+        if v_start not in self.adj_list.keys():
+            return visited
+
         visited, truth = self.dfs_recursive(visited, v_start, v_end)
 
         return visited
@@ -176,6 +179,9 @@ class UndirectedGraph:
         """
         visited = []
         queue = []
+
+        if v_start not in self.adj_list.keys():
+            return visited
 
         visited.append(v_start)
         if v_start == v_end:
