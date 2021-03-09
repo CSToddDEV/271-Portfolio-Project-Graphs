@@ -1,7 +1,7 @@
 # Course: CS261 - Data Structures
-# Author:
-# Assignment:
-# Description:
+# Author: Calvin Todd
+# Assignment: 6 - Portfolio Project
+# Description: In this assignment we build a directed graph class!
 
 class DirectedGraph:
     """
@@ -52,64 +52,226 @@ class DirectedGraph:
 
     def add_vertex(self) -> int:
         """
-        TODO: Write this implementation
+        This method adds a new vertex to the graph.  It will return a single integer, the number of vertices in the
+        graph after addition.
         """
-        pass
+        self.v_count += 1
+
+        new_v = []
+        for i in range(self.v_count):
+            new_v.append(0)
+
+        if self.v_count > 1:
+            for v in self.adj_matrix:
+                v.append(0)
+
+        self.adj_matrix.append(new_v)
+
+        return self.v_count
 
     def add_edge(self, src: int, dst: int, weight=1) -> None:
         """
-        TODO: Write this implementation
+        This method adds a new edge to the graph.  It populates the list corresponding with the initial vertex,
+        and within that the list index corresponding to the destination vertex.  The value is the weight of the edge.
+        If either the vertices do not exist, they both reference the same vertex, or the weight is not positive, this
+        method does nothing.
         """
-        pass
+        if src == dst:
+            return
+
+        elif src >= self.v_count or dst >= self.v_count:
+            return
+
+        elif weight <= 0:
+            return
+
+        else:
+            self.adj_matrix[src][dst] = weight
 
     def remove_edge(self, src: int, dst: int) -> None:
         """
-        TODO: Write this implementation
+        This method removes and edge between the two provided vertices.  If either vertex does not exist, or there is no
+        edge between them, this method does nothing.
         """
-        pass
+        if src > self.v_count - 1 or dst > self.v_count - 1:
+            return
+
+        elif self.adj_matrix[src][dst] == 0:
+            return
+
+        else:
+            self.adj_matrix[src][dst] = 0
 
     def get_vertices(self) -> []:
         """
-        TODO: Write this implementation
+        THis method returns a list of vertices of the graph.
         """
-        pass
+        vertices = []
+
+        for i in range(len(self.adj_matrix)):
+            if len(self.adj_matrix[i]) > 0:
+                vertices.append(i)
+
+        return vertices
 
     def get_edges(self) -> []:
         """
-        TODO: Write this implementation
+        This method returns a list of edges from the graph in the form of a tuple.  The first element in the tuple will
+        be the index of the origin vertex, the second will be the index of the destination vertex, and the third
+        will be the weight of the side.
         """
-        pass
+        edges = []
+
+        for source in range(len(self.adj_matrix)):
+            for destination in range(len(self.adj_matrix[source])):
+                if self.adj_matrix[source][destination] > 0:
+                    edges.append((source, destination, self.adj_matrix[source][destination]))
+
+        return edges
+
 
     def is_valid_path(self, path: []) -> bool:
         """
-        TODO: Write this implementation
+        This method takes a list of vertex indices and returns True or False depending whether they are a valid path
+        connected by edges
         """
-        pass
+        if not path:
+            return True
+
+        truth = True
+
+        for i in range(len(path) - 1):
+            if not self.adj_matrix[path[i]][path[i + 1]] > 0:
+                truth = False
+
+        return truth
+
+    def recursive_dfs_helper(self, visited, start, end):
+        """
+        Recursive he;per for the dfs method
+        """
+        if end is not None and end == start:
+            visited.append(start)
+            return visited
+
+        if start not in visited:
+            visited.append(start)
+            for i in range(len(self.adj_matrix[start])):
+                if self.adj_matrix[start][i] > 0:
+                    visited = self.recursive_dfs_helper(visited, i, end)
+
+        return visited
+
+
 
     def dfs(self, v_start, v_end=None) -> []:
         """
-        TODO: Write this implementation
+        This method performs a recursive Depth First Search.  If an ending vertex is provided
+        then the search will only go up to that vertex.  If the ending vertex is not in the graph, then
+        it will act as if there is no ending vertex.  If the start vertex is not in the graph,
+        the method returns an em
+        pty list.
         """
-        pass
+        visited = []
+
+        if v_start >= self.v_count or self.adj_matrix[v_start] == []:
+            return visited
+
+        visited = self.recursive_dfs_helper(visited, v_start, v_end)
+
+        return visited
 
     def bfs(self, v_start, v_end=None) -> []:
         """
-        TODO: Write this implementation
+        This method performs a Breadth First Search of the graph based on teh provided start index
         """
-        pass
+        visited = []
+        queue = []
+
+        visited.append(v_start)
+        if v_start == v_end:
+            return visited
+        queue.append(v_start)
+
+        while queue:
+            v = queue.pop(0)
+
+            for i in range(len(self.adj_matrix[v])):
+                if self.adj_matrix[v][i] > 0:
+                    if i not in visited:
+                        visited.append(i)
+                        if i == v_end:
+                            return visited
+                        queue.append(i)
+
+        return visited
+
+    def recursive_has_cycle(self, v, visited, recursive_visited):
+        """
+        This method is a recursive helper for has_cycle.
+        """
+        visited.append(v)
+        recursive_visited.append(v)
+
+        for i in range(len(self.adj_matrix[v])):
+            if self.adj_matrix[v][i] > 0:
+                if i not in visited:
+                    truth = self.recursive_has_cycle(i, visited, recursive_visited)
+                    if truth is True:
+                        return True
+                elif i in recursive_visited:
+                    return True
+
+        recursive_visited.remove(v)
+        return False
 
     def has_cycle(self):
         """
-        TODO: Write this implementation
+        This method returns True if there is at least one cycle in the graph.
         """
-        pass
+        truth = False
+        visited = []
+        recursive_visited = []
+
+        for vertex in range(len(self.adj_matrix)):
+            if vertex not in visited:
+                truth = self.recursive_has_cycle(vertex, visited, recursive_visited)
+                if truth is True:
+                    return truth
+
+        return truth
 
     def dijkstra(self, src: int) -> []:
         """
-        TODO: Write this implementation
+        This method returns a list of the shortest path using dijkstra's algorithm where each index coincides with the
+        length of the shortest path form the src index.  If the other index can not be reached it is infinity.
         """
-        pass
+        # Create distance, vertex, and previous sets
+        distance = []
+        vertices = []
+        for i in range(self.v_count):
+            vertices.append(i)
+            distance.append(float('inf'))
 
+        #Set distance of src node
+        distance[src] = 0
+
+        while vertices:
+            #Get vertex with shortest distance
+            min_distance = None
+            for vertex in vertices:
+                if min_distance is None or distance[vertex] < distance[min_distance]:
+                    min_distance = vertex
+            vertices.remove(min_distance)
+
+            #Check distance of neighbor nodes for shortest path
+            for i in range(len(self.adj_matrix[min_distance])):
+                if self.adj_matrix[min_distance][i] > 0:
+                    distance_holder = distance[min_distance] + self.adj_matrix[min_distance][i]
+                    if distance_holder < distance[i]:
+                        distance[i] = distance_holder
+
+        return distance
 
 if __name__ == '__main__':
 
